@@ -36,6 +36,13 @@ def scrape_list(url)
       term: 2009,
       source: url.to_s,
     }
+    notes = tds[4].text.to_s
+    if (capture = notes.match /Until (\d+ \w+ \d+)/i).to_a.any?
+      end_date = Date.parse(capture.captures.first).to_s rescue binding.pry
+    end
+    if (capture = notes.match /Elected (\d+ \w+ \d+)/i).to_a.any?
+      start_date = Date.parse(capture.captures.first).to_s rescue binding.pry
+    end
     ScraperWiki.save_sqlite([:name, :area, :party, :term], data)
   end
 end
