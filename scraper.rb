@@ -1,5 +1,6 @@
 #!/bin/env ruby
 # encoding: utf-8
+# frozen_string_literal: true
 
 require 'nokogiri'
 require 'pry'
@@ -10,7 +11,7 @@ OpenURI::Cache.cache_path = '.cache'
 
 class String
   def tidy
-    self.gsub(/[[:space:]]+/, ' ').strip
+    gsub(/[[:space:]]+/, ' ').strip
   end
 end
 
@@ -23,19 +24,17 @@ def scrape_list(url)
   noko.xpath('//table[.//th[contains(.,"Religion")]]/tr[td]').each do |tr|
     tds = tr.css('td')
 
-    data = { 
-      name: tds[0].text.tidy,
-      wikiname: tds[0].xpath('.//a[not(@class="new")]/@title').text,
-
-      area: tds[2].text.tidy,
-
-      religion: tds[3].text.tidy,
-
-      party: tds[1].text.tidy,
+    data = {
+      name:           tds[0].text.tidy,
+      wikiname:       tds[0].xpath('.//a[not(@class="new")]/@title').text,
+      area:           tds[2].text.tidy,
+      religion:       tds[3].text.tidy,
+      party:          tds[1].text.tidy,
       party_wikiname: tds[1].xpath('.//a[not(@class="new")]/@title').text,
-      term: 2009,
-      source: url.to_s,
+      term:           2009,
+      source:         url.to_s,
     }
+
     notes = tds[4].text.to_s
     if (capture = notes.match /Until (\d+ \w+ \d+)/i).to_a.any?
       end_date = Date.parse(capture.captures.first).to_s rescue binding.pry
@@ -43,7 +42,7 @@ def scrape_list(url)
     if (capture = notes.match /Elected (\d+ \w+ \d+)/i).to_a.any?
       start_date = Date.parse(capture.captures.first).to_s rescue binding.pry
     end
-    ScraperWiki.save_sqlite([:name, :area, :party, :term], data)
+    ScraperWiki.save_sqlite(%i(name area party term), data)
   end
 end
 
