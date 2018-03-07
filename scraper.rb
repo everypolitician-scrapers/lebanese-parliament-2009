@@ -13,9 +13,9 @@ def noko_for(url)
   Nokogiri::HTML(open(url).read)
 end
 
-def scrape_list(url)
+def data_at(url)
   noko = noko_for(url)
-  noko.xpath('//table[.//th[contains(.,"Religion")]]/tr[td]').each do |tr|
+  noko.xpath('//table[.//th[contains(.,"Religion")]]/tr[td]').map do |tr|
     tds = tr.css('td')
 
     data = {
@@ -36,9 +36,13 @@ def scrape_list(url)
     if (capture = notes.match /Elected (\d+ \w+ \d+)/i).to_a.any?
       start_date = Date.parse(capture.captures.first).to_s rescue binding.pry
     end
-    ScraperWiki.save_sqlite(%i(name area party term), data)
+    data
   end
 end
 
+url = 'https://en.wikipedia.org/wiki/Members_of_the_2009%E2%80%9317_Lebanese_Parliament'
+data = data_at(url)
+data.each { |mem| puts mem.reject { |_, v| v.to_s.empty? }.sort_by { |k, _| k }.to_h } if ENV['MORPH_DEBUG']
+
 ScraperWiki.sqliteexecute('DELETE FROM data') rescue nil
-scrape_list('https://en.wikipedia.org/wiki/Members_of_the_2009%E2%80%9317_Lebanese_Parliament')
+ScraperWiki.save_sqlite(%i(name area party term), data)
