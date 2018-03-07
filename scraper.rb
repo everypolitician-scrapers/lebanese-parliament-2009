@@ -19,7 +19,7 @@ def data_at(url)
     tds = tr.css('td')
 
     data = {
-      name:           tds[0].text.tidy,
+      name:           tds[0].css('a')&.first&.text&.tidy || tds[0].text.tidy,
       wikiname:       tds[0].xpath('.//a[not(@class="new")]/@title').text,
       area:           tds[2].text.tidy,
       religion:       tds[3].text.tidy,
